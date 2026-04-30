@@ -1,0 +1,22 @@
+=== МЕТРИКИ МОДЕЛИ AI-IPS (Random Forest) ===
+Датасет:        600 записей (255 норма / 345 атаки)
+Признаки:       ['user5_kbps', 'router_kbps']
+Алгоритм:       RandomForestClassifier (n_estimators=100)
+
+Accuracy:       99.44%
+ROC-AUC:        0.9999
+Cross-val (5):  100.00% ± 0.00%
+
+Матрица ошибок:
+  TN=75  FP=1
+  FN=0  TP=104
+
+              precision    recall  f1-score   support
+
+       Норма       1.00      0.99      0.99        76
+       Атака       0.99      1.00      1.00       104
+
+    accuracy                           0.99       180
+   macro avg       1.00      0.99      0.99       180
+weighted avg       0.99      0.99      0.99       180
+

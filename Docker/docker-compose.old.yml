@@ -1,0 +1,85 @@
+services:
+  rtr-fw:
+    image: ubuntu:22.04
+    container_name: rtr-fw
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan10_admin:
+        ipv4_address: 10.10.10.254
+      vlan20_users:
+        ipv4_address: 10.10.20.254
+      vlan30_dmz:
+        ipv4_address: 10.10.30.254
+      vlan40_servers:
+        ipv4_address: 10.10.40.254
+
+  admin1:
+    image: ubuntu:22.04
+    container_name: admin1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan10_admin:
+        ipv4_address: 10.10.10.10
+
+  client1:
+    image: ubuntu:22.04
+    container_name: client1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan20_users:
+        ipv4_address: 10.10.20.10
+
+  web1:
+    image: nginx:latest
+    container_name: web1
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan30_dmz:
+        ipv4_address: 10.10.30.10
+
+  srv1:
+    image: ubuntu:22.04
+    container_name: srv1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan40_servers:
+        ipv4_address: 10.10.40.10
+
+networks:
+  vlan10_admin:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+
+  vlan20_users:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.20.0/24
+
+  vlan30_dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.30.0/24
+
+  vlan40_servers:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.40.0/24

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Corporate VLAN Dashboard</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#101a2e;
+      --muted:#8fa3c8;
+      --text:#e8f0ff;
+      --accent:#4da3ff;
+      --border:rgba(255,255,255,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:16px;
+      background:linear-gradient(180deg,#070c16 0%, #0b1220 100%);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; margin-bottom:12px;
+    }
+    .title{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .title h1{margin:0; font-size:18px; font-weight:800; letter-spacing:.2px}
+    .title .sub{color:var(--muted); font-size:12px}
+    .pill{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .tabs{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin:10px 0 12px;
+    }
+    .tab{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+      user-select:none;
+      transition:all .12s ease;
+    }
+    .tab:hover{transform:translateY(-1px); border-color:rgba(77,163,255,.35)}
+    .tab.active{
+      background:rgba(77,163,255,.16);
+      border-color:rgba(77,163,255,.55);
+      box-shadow:0 0 0 1px rgba(77,163,255,.12) inset;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:1100px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      border:1px solid var(--border);
+      background:rgba(16,26,46,.65);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .card .hdr{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      background:rgba(255,255,255,.03);
+      border-bottom:1px solid var(--border);
+      font-size:13px;
+      font-weight:800;
+    }
+    .card .meta{
+      color:var(--muted);
+      font-weight:600;
+      font-size:12px;
+    }
+    iframe{
+      width:100%;
+      height:520px;
+      border:0;
+      background:#0c1426;
+      display:block;
+    }
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    code{
+      background:rgba(255,255,255,.06);
+      padding:2px 6px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      color:#d8e6ff;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="title">
+    <h1>Corporate Network — VLAN Wallboard</h1>
+    <div class="sub">Одна страница: переключай VLAN → смотри Hosts/Flows по сегменту</div>
+  </div>
+  <div class="pill">Источник: ntopng через proxy <code>http://localhost:3001</code></div>
+</header>
+
+<!-- =========================
+  ВАЖНО: IFID — это ID интерфейса в ntopng.
+  Если у тебя при переключении VLAN показывается "не тот сегмент",
+  просто поправь IFID ниже.
+
+  Как узнать IFID:
+  В ntopng открой Interfaces → выбери br-xxxxx → обычно в URL есть ifid=ЧИСЛО
+========================= -->
+<script>
+  // === Настройки (поправь под себя) ===
+  // const NTOP = "http://localhost:3001";
+  const NTOP = "http://ntopng-proxy:80";
+	
+  // Поставь реальные ifid из ntopng (Interfaces). Сейчас стоят примерные.
+  const IFID = {
+    ALL:    "",    // пусто = "как есть" (или заменишь на ifid общего интерфейса)
+    ADMIN:  "1",
+    HR:     "2",
+    USERS:  "3",
+    BOSS:   "4",
+    ACC:    "5",
+    DMZ:    "6",
+    SRV:    "7"
+  };
+
+  // Страницы ntopng, которые обычно нормально работают в Community и полезны для диплома
+  const PAGES = {
+    DASH:  "/lua/index.lua",          // главный дашборд
+    HOSTS: "/lua/hosts_stats.lua",    // хосты/трафик
+    FLOWS: "/lua/flows_stats.lua"     // флоу/протоколы
+  };
+
+  function urlWithIfid(path, ifid){
+    const base = NTOP + path;
+    if(!ifid) return base;
+    return base + (base.includes("?") ? "&" : "?") + "ifid=" + encodeURIComponent(ifid);
+  }
+</script>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-key="ALL">ALL (общий)</div>
+  <div class="tab" data-key="ADMIN">Admins (10.10.10.0/24)</div>
+  <div class="tab" data-key="HR">HR (10.10.20.0/24)</div>
+  <div class="tab" data-key="USERS">Users (Office)</div>
+  <div class="tab" data-key="BOSS">Boss (Management)</div>
+  <div class="tab" data-key="ACC">Accounting</div>
+  <div class="tab" data-key="DMZ">DMZ</div>
+  <div class="tab" data-key="SRV">Servers</div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="hdr">
+      <span>Dashboard</span>
+      <span class="meta" id="metaDash">VLAN: ALL</span>
+    </div>
+    <iframe id="frameDash" src=""></iframe>
+  </div>
+
+  <div class="card">
+    <div class="hdr">
+      <span>Hosts</span>
+      <span class="meta" id="metaHosts">VLAN: ALL</span>
+    </div>
+    <iframe id="frameHosts" src=""></iframe>
+  </div>
+
+  <div class="card">
+    <div class="hdr">
+      <span>Flows</span>
+      <span class="meta" id="metaFlows">VLAN: ALL</span>
+    </div>
+    <iframe id="frameFlows" src=""></iframe>
+  </div>
+
+  <div class="card">
+    <div class="hdr">
+      <span>Quick Links</span>
+      <span class="meta">открыть отдельно</span>
+    </div>
+    <div style="padding:12px; line-height:1.7;">
+      <div style="color:var(--muted); font-size:13px;">
+        Если iframe иногда тормозит — открывай в новой вкладке:
+      </div>
+      <ul style="margin:10px 0 0 18px; padding:0; color:#dbe8ff;">
+        <li><a id="lnkDash"  href="#" target="_blank" style="color:var(--accent); text-decoration:none;">Dashboard</a></li>
+        <li><a id="lnkHosts" href="#" target="_blank" style="color:var(--accent); text-decoration:none;">Hosts</a></li>
+        <li><a id="lnkFlows" href="#" target="_blank" style="color:var(--accent); text-decoration:none;">Flows</a></li>
+      </ul>
+      <div class="hint">
+        Если в каком-то VLAN пусто — запусти генерацию трафика в соответствующих контейнерах и проверь,
+        что rtr-fw делает NAT/forward.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hint">
+  Если вместо графиков снова “серые плитки” — значит прокси не снимает заголовки.
+  Тогда проверь, что ты открываешь именно через <code>http://localhost:3001</code>, а не напрямую <code>3000</code>.
+</div>
+
+<script>
+  const tabs = document.querySelectorAll(".tab");
+  const frameDash  = document.getElementById("frameDash");
+  const frameHosts = document.getElementById("frameHosts");
+  const frameFlows = document.getElementById("frameFlows");
+
+  const metaDash  = document.getElementById("metaDash");
+  const metaHosts = document.getElementById("metaHosts");
+  const metaFlows = document.getElementById("metaFlows");
+
+  const lnkDash  = document.getElementById("lnkDash");
+  const lnkHosts = document.getElementById("lnkHosts");
+  const lnkFlows = document.getElementById("lnkFlows");
+
+  function setVlan(key){
+    const ifid = IFID[key] ?? "";
+    const label = key;
+
+    const dashUrl  = urlWithIfid(PAGES.DASH, ifid);
+    const hostsUrl = urlWithIfid(PAGES.HOSTS, ifid);
+    const flowsUrl = urlWithIfid(PAGES.FLOWS, ifid);
+
+    frameDash.src  = dashUrl;
+    frameHosts.src = hostsUrl;
+    frameFlows.src = flowsUrl;
+
+    metaDash.textContent  = "VLAN: " + label;
+    metaHosts.textContent = "VLAN: " + label;
+    metaFlows.textContent = "VLAN: " + label;
+
+    lnkDash.href  = dashUrl;
+    lnkHosts.href = hostsUrl;
+    lnkFlows.href = flowsUrl;
+  }
+
+  tabs.forEach(t => {
+    t.addEventListener("click", () => {
+      tabs.forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      setVlan(t.dataset.key);
+    });
+  });
+
+  // init
+  setVlan("ALL");
+</script>
+</body>
+</html>

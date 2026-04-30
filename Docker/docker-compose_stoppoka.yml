@@ -1,0 +1,248 @@
+services:
+  rtr-fw:
+    image: ubuntu:22.04
+    container_name: rtr-fw
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan10_admin:
+        ipv4_address: 10.10.10.254
+      vlan20_hr:
+        ipv4_address: 10.10.20.254
+      vlan30_dmz:
+        ipv4_address: 10.10.30.254
+      vlan40_servers:
+        ipv4_address: 10.10.40.254
+      vlan50_acc:
+        ipv4_address: 10.10.50.254
+      vlan60_users:
+        ipv4_address: 10.10.60.254
+      vlan70_mgmt:
+        ipv4_address: 10.10.70.254
+
+  # ===== Админы (2 ПК) =====
+  admin1:
+    image: ubuntu:22.04
+    container_name: admin1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan10_admin:
+        ipv4_address: 10.10.10.10
+
+  admin2:
+    image: ubuntu:22.04
+    container_name: admin2
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan10_admin:
+        ipv4_address: 10.10.10.11
+
+  # ===== HR (2 ПК) =====
+  hr1:
+    image: ubuntu:22.04
+    container_name: hr1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan20_hr:
+        ipv4_address: 10.10.20.10
+
+  hr2:
+    image: ubuntu:22.04
+    container_name: hr2
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan20_hr:
+        ipv4_address: 10.10.20.11
+
+  # ===== DMZ (web1) =====
+  web1:
+    image: nginx:latest
+    container_name: web1
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan30_dmz:
+        ipv4_address: 10.10.30.10
+
+  # ===== Серверный сегмент (srv1) =====
+  srv1:
+    image: ubuntu:22.04
+    container_name: srv1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan40_servers:
+        ipv4_address: 10.10.40.10
+
+  # ===== Бухгалтерия (2 ПК) =====
+  acc1:
+    image: ubuntu:22.04
+    container_name: acc1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan50_acc:
+        ipv4_address: 10.10.50.10
+
+  acc2:
+    image: ubuntu:22.04
+    container_name: acc2
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan50_acc:
+        ipv4_address: 10.10.50.11
+
+  # ===== Офисные юзеры (5 ПК) =====
+  client1:
+    image: ubuntu:22.04
+    container_name: client1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan60_users:
+        ipv4_address: 10.10.60.10
+
+  user2:
+    image: ubuntu:22.04
+    container_name: user2
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan60_users:
+        ipv4_address: 10.10.60.11
+
+  user3:
+    image: ubuntu:22.04
+    container_name: user3
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan60_users:
+        ipv4_address: 10.10.60.12
+
+  user4:
+    image: ubuntu:22.04
+    container_name: user4
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan60_users:
+        ipv4_address: 10.10.60.13
+
+  user5:
+    image: ubuntu:22.04
+    container_name: user5
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan60_users:
+        ipv4_address: 10.10.60.14
+
+  # ===== Начальство (3 ПК) =====
+  boss1:
+    image: ubuntu:22.04
+    container_name: boss1
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan70_mgmt:
+        ipv4_address: 10.10.70.10
+
+  boss2:
+    image: ubuntu:22.04
+    container_name: boss2
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan70_mgmt:
+        ipv4_address: 10.10.70.11
+
+  boss3:
+    image: ubuntu:22.04
+    container_name: boss3
+    command: ["sleep", "infinity"]
+    tty: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vlan70_mgmt:
+        ipv4_address: 10.10.70.12
+
+networks:
+  vlan10_admin:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+
+  vlan20_hr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.20.0/24
+
+  vlan30_dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.30.0/24
+
+  vlan40_servers:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.40.0/24
+
+  vlan50_acc:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.50.0/24
+
+  vlan60_users:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.60.0/24
+
+  vlan70_mgmt:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.70.0/24
