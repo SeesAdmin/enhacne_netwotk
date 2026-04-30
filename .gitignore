@@ -1,0 +1,7 @@
+Traffic/venv/
+Traffic/__pycache__/
+Traffic/brain.pkl
+Traffic/ips_events.log
+Docker/ntopng-data/
+*.pyc
+__pycache__/
