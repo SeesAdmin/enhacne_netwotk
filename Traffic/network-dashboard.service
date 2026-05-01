@@ -1,0 +1,20 @@
+[Unit]
+Description=Network Dashboard (Streamlit)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=seesoon
+WorkingDirectory=/home/Diploma/Traffic
+ExecStart=/home/Diploma/Traffic/venv/bin/streamlit run dashboard.py \
+    --server.port 8501 \
+    --server.headless true \
+    --server.address 0.0.0.0 \
+    --browser.gatherUsageStats false
+Restart=on-failure
+RestartSec=5
+Environment=HOME=/home/seesoon
+
+[Install]
+WantedBy=multi-user.target
